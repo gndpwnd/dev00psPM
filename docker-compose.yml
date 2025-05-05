@@ -1,9 +1,3 @@
-# start n8n
-# start discord bot
-# sync workflows/agents into n8n
-
-version: "3.8"
-
 services:
   n8n:
     image: n8nio/n8n
@@ -16,6 +10,11 @@ services:
       - "5678:5678"
     volumes:
       - n8n_data:/home/node/.n8n
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5678/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   discord-bot:
     build:
@@ -29,17 +28,11 @@ services:
 
   import-agents:
     image: curlimages/curl:latest
-    depends_on:
-      - n8n
     volumes:
-      - ./agents:/agents:ro
-      - ./import_agents.sh:/import_agents.sh:ro
+      - ./agents:./agents:ro
+      - ./scripts/import_agents.sh:./scripts/import_agents.sh:ro
     environment:
       - N8N_URL=http://n8n:5678
       - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
       - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
-    entrypoint: ["/bin/sh", "-c", "sleep 10 && sh /import_agents.sh"]
-    restart: "no"
-
-volumes:
-  n8n_data:
+    entrypoint: ["/bin/sh", "-c", "sh ./scripts/import_agents.sh"]

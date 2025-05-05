@@ -6,7 +6,7 @@ AUTH_PASS=${N8N_BASIC_AUTH_PASSWORD:-adminpass}
 
 echo "Importing agent workflows..."
 
-for file in /agents/*.json; do
+for file in ./agents/*.json; do
   echo "Importing $file..."
   curl -s -u "$AUTH_USER:$AUTH_PASS" \
     -X POST "$N8N_URL/rest/workflows" \
